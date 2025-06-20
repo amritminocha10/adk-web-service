@@ -9,6 +9,7 @@ import { Label } from "../components/ui/Label"
 export default function UploadPage() {
   const navigate = useNavigate()
   const [vin, setVin] = useState("")
+  const [userQuery, setUserQuery] = useState("")
   const [files, setFiles] = useState([])
 
   const handleFileChange = (e) => {
@@ -58,6 +59,18 @@ export default function UploadPage() {
                   maxLength={17}
                   required
                   placeholder="Enter 17-digit VIN"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="userQuery">Explaination *</Label>
+                <Input
+                  id="userQuery"
+                  type="text"
+                  value={userQuery}
+                  onChange={(e) => setUserQuery(e.target.value)}
+                  required
+                  placeholder="Please explain the damage"
                 />
               </div>
 
