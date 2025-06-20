@@ -79,7 +79,7 @@ export default function Home() {
             <Shield className="h-6 w-6" />
             <span className="text-xl font-bold">AutoClaim360</span>
           </div>
-          <div className="text-slate-400">© 2024 AutoClaim360. All rights reserved.</div>
+          <div className="text-slate-400">© 2025 AutoClaim360. All rights reserved.</div>
         </div>
       </footer>
     </div>

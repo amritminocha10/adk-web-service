@@ -1,50 +1,165 @@
-import React, { useState, useEffect } from "react"
-import { useNavigate } from "react-router-dom"
-import { Eye, Search, FileCheck, FileText, Clock, CheckCircle, Shield, ArrowLeft } from "lucide-react"
-import { Button } from "../components/ui/Button"
-import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/Card"
-import { Progress } from "../components/ui/Progress"
+import { useEffect, useState, useRef } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import {
+  Eye,
+  Search,
+  FileCheck,
+  FileText,
+  Clock,
+  CheckCircle,
+  Shield,
+  ArrowLeft,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
+import { Button } from "../components/ui/Button";
+import { Card, CardContent } from "../components/ui/Card";
+import { Progress } from "../components/ui/Progress";
+
+const stepIcons = {
+  vision: <Eye />,
+  metadata: <Search />,
+  policy: <FileCheck />,
+  report: <FileText />,
+};
+
+const stepTitles = {
+  vision: "Analyzing Damage",
+  metadata: "Validating Metadata",
+  policy: "Checking Policy",
+  report: "Generating Report",
+};
+
+const authorToStepId = {
+  InspectionAgent: "vision",
+  VisionAgent: "vision",
+  VinAgent: "metadata",
+  KBSearchAgent: "policy",
+  ReportAgent: "report",
+};
 
 export default function Processing() {
-  const navigate = useNavigate()
-  const [steps, setSteps] = useState([
-    { id: "vision", title: "Analyzing Damage", icon: <Eye />, status: "processing", progress: 0 },
-    { id: "metadata", title: "Validating Metadata", icon: <Search />, status: "pending", progress: 0 },
-    { id: "policy", title: "Checking Policy", icon: <FileCheck />, status: "pending", progress: 0 },
-    { id: "report", title: "Generating Report", icon: <FileText />, status: "pending", progress: 0 },
-  ])
-  const [overallProgress, setOverallProgress] = useState(0)
+  const navigate = useNavigate();
+  const location = useLocation();
+  const sessionId = location.state?.sessionId;
+
+  const initialSteps = ["vision", "metadata", "policy", "report"].map(
+    (id, index) => ({
+      id,
+      title: stepTitles[id],
+      status: index === 0 ? "processing" : "pending",
+      progress: 0,
+      message: "",
+    })
+  );
+
+  const [steps, setSteps] = useState(initialSteps);
+  const [overallProgress, setOverallProgress] = useState(1);
+  const [expandedStep, setExpandedStep] = useState(null);
+  const isFinished = useRef(false);
+  const repostedData = useRef(null);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setSteps((prev) => {
-        const newSteps = [...prev]
-        const current = newSteps.find((s) => s.status === "processing")
-        if (current) {
-          current.progress += 10
-          if (current.progress >= 100) {
-            current.status = "completed"
-            const next = newSteps.find((s) => s.status === "pending")
-            if (next) next.status = "processing"
-            else {
-              clearInterval(interval)
-              setTimeout(() => navigate("/report"), 1000)
-            }
+    if (!sessionId) return;
+
+    const controller = new AbortController();
+
+    fetch(`http://127.0.0.1:8000/stream-claim/${sessionId}`, {
+      method: "GET",
+      signal: controller.signal,
+    })
+      .then((response) => {
+        const reader = response.body?.getReader();
+        const decoder = new TextDecoder("utf-8");
+        let buffer = "";
+
+        const handleStreamEvent = (event) => {
+          const { event: type, data } = event;
+          const { author, message, done } = data;
+
+          if (author === "ReportAgent" && type === "final") {
+            repostedData.current = data;
           }
+
+          const stepId = authorToStepId[author];
+          if (!stepId) return;
+
+          setSteps((prevSteps) =>
+            prevSteps.map((step) => {
+              if (step.id === stepId) {
+                const newProgress = done
+                  ? 100
+                  : Math.min(step.progress + 25, 99);
+                return {
+                  ...step,
+                  status: done ? "completed" : "processing",
+                  progress: newProgress,
+                  message: done ? message : step.message,
+                };
+              } else if (step.status !== "completed") {
+                return { ...step, status: "pending", progress: 0 };
+              }
+              return step;
+            })
+          );
+        };
+
+        const processStream = async () => {
+          while (true) {
+            const { value, done } = await reader.read();
+            if (done) break;
+
+            buffer += decoder.decode(value, { stream: true });
+
+            const jsonMatches = buffer.matchAll(/(\{.*?\})(?=\{|\s*$)/gs);
+            for (const match of jsonMatches) {
+              try {
+                const json = JSON.parse(match[1]);
+                handleStreamEvent(json);
+              } catch (e) {
+                console.warn("JSON parse error in stream:", match[1]);
+              }
+            }
+
+            buffer = "";
+          }
+
+          isFinished.current = true;
+          setTimeout(() => {
+            navigate("/report", {
+              state: {
+                steps: steps.map(({ icon, ...rest }) => rest),
+                repostedData: repostedData.current,
+              },
+            });
+          }, 1000);
+        };
+
+        processStream().catch((err) => {
+          console.error("Stream processing failed:", err);
+        });
+      })
+      .catch((err) => {
+        if (err.name !== "AbortError") {
+          console.error("Streaming error:", err);
         }
-        return newSteps
-      })
+      });
 
-      setOverallProgress((prev) => {
-        const complete = steps.filter((s) => s.status === "completed").length
-        const processing = steps.find((s) => s.status === "processing")
-        const prog = processing ? processing.progress / 100 : 0
-        return ((complete + prog) / steps.length) * 100
-      })
-    }, 500)
+    return () => {
+      if (!isFinished.current) controller.abort();
+    };
+  }, [sessionId, navigate]);
 
-    return () => clearInterval(interval)
-  }, [steps, navigate])
+  useEffect(() => {
+    const totalSteps = steps.length;
+    const totalProgress = steps.reduce((sum, step) => sum + step.progress, 0);
+    const averageProgress = Math.max(1, totalProgress / totalSteps);
+    setOverallProgress(averageProgress);
+  }, [steps]);
+
+  const toggleAccordion = (stepId) => {
+    setExpandedStep((prev) => (prev === stepId ? null : stepId));
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
@@ -56,32 +171,72 @@ export default function Processing() {
           </Button>
           <div className="flex items-center space-x-2">
             <Shield className="h-6 w-6 text-blue-600" />
-            <span className="text-xl font-bold text-slate-800">AutoClaim360</span>
+            <span className="text-xl font-bold text-slate-800">
+              AutoClaim360
+            </span>
           </div>
         </div>
       </header>
 
       <div className="container mx-auto px-4 py-8 max-w-3xl text-center">
-        <h1 className="text-3xl font-bold text-slate-800 mb-2">Processing Your Claim</h1>
-        <p className="text-slate-600 mb-4">AI agents are reviewing your submission</p>
-        <Progress value={overallProgress} className="h-3 mb-8" />
+        <h1 className="text-3xl font-bold text-slate-800 mb-2">
+          Processing Your Claim
+        </h1>
+        <p className="text-slate-600 mb-4">
+          AI agents are reviewing your submission
+        </p>
+        <Progress value={overallProgress} className="h-3 mb-8 transition-all duration-500" />
 
         <div className="space-y-4">
           {steps.map((step) => (
             <Card key={step.id} className="bg-white shadow-md">
-              <CardContent className="flex items-center space-x-4 p-4">
-                <div className={`rounded-full p-2 ${step.status === "completed" ? "bg-green-500 text-white" : step.status === "processing" ? "bg-blue-500 text-white animate-pulse" : "bg-slate-200 text-slate-600"}`}>
-                  {step.status === "completed" ? <CheckCircle className="w-6 h-6" /> : step.status === "processing" ? <Clock className="w-6 h-6" /> : step.icon}
-                </div>
-                <div className="flex-1 text-left">
-                  <h3 className="text-lg font-medium text-slate-800">{step.title}</h3>
-                  {step.status === "processing" && <Progress value={step.progress} className="h-2 mt-2" />}
-                </div>
+              <CardContent className="p-4 text-left space-y-2">
+                <button
+                  onClick={() => toggleAccordion(step.id)}
+                  className="w-full flex items-center space-x-4 text-left focus:outline-none"
+                >
+                  <div
+                    className={`rounded-full p-2 ${
+                      step.status === "completed"
+                        ? "bg-green-500 text-white"
+                        : step.status === "processing"
+                        ? "bg-blue-500 text-white animate-pulse"
+                        : "bg-slate-200 text-slate-600"
+                    }`}
+                  >
+                    {step.status === "completed" ? (
+                      <CheckCircle className="w-6 h-6" />
+                    ) : step.status === "processing" ? (
+                      <Clock className="w-6 h-6" />
+                    ) : (
+                      stepIcons[step.id]
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-medium text-slate-800">
+                      {step.title}
+                    </h3>
+                    <Progress value={step.progress} className="h-2 mt-1" />
+                  </div>
+                  {step.message && (
+                    expandedStep === step.id ? (
+                      <ChevronUp className="w-5 h-5 text-slate-500" />
+                    ) : (
+                      <ChevronDown className="w-5 h-5 text-slate-500" />
+                    )
+                  )}
+                </button>
+
+                {expandedStep === step.id && step.message && (
+                  <pre className="text-slate-700 text-sm whitespace-pre-wrap bg-slate-50 p-3 rounded border border-slate-200 mt-2">
+                    {step.message}
+                  </pre>
+                )}
               </CardContent>
             </Card>
           ))}
         </div>
       </div>
     </div>
-  )
+  );
 }

@@ -1,26 +1,59 @@
-import React, { useState } from "react"
-import { useNavigate } from "react-router-dom"
-import { Shield, Upload as UploadIcon, ArrowLeft, Camera } from "lucide-react"
-import { Button } from "../components/ui/Button"
-import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/Card"
-import { Input } from "../components/ui/Input"
-import { Label } from "../components/ui/Label"
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Shield, Upload as UploadIcon, ArrowLeft, Camera } from "lucide-react";
+import { Button } from "../components/ui/Button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/Card";
+import { Input } from "../components/ui/Input";
+import { Label } from "../components/ui/Label";
+import API from "../server/API.js";
 
 export default function UploadPage() {
-  const navigate = useNavigate()
-  const [vin, setVin] = useState("")
-  const [userQuery, setUserQuery] = useState("")
-  const [files, setFiles] = useState([])
+  const navigate = useNavigate();
+  const [vin, setVin] = useState("12457885214796354");
+  const [userQuery, setUserQuery] = useState("Damage");
+  const [files, setFiles] = useState([]);
+  const [sessionId, setSessionId] = useState("");
 
   const handleFileChange = (e) => {
-    const newFiles = Array.from(e.target.files || [])
-    setFiles((prev) => [...prev, ...newFiles])
-  }
+    const newFiles = Array.from(e.target.files || []);
+    setFiles((prev) => [...prev, ...newFiles]);
+  };
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    if (vin && files.length > 0) navigate("/processing")
-  }
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const formData = new FormData();
+    formData.append("vin", vin);
+    formData.append("customer_prompt", userQuery);
+
+    files.forEach((file) => {
+      formData.append("vehicle_image", file);
+    });
+
+    try {
+      const response = await API.post.uploadClaimData(formData);
+      if (!response || !response.session_id) {
+        alert("Failed to upload claim data. Please try again.");
+        return;
+      }
+      setSessionId(response?.session_id);
+      // alert(
+      //   "Claim data uploaded successfully. You will be redirected to processing page."
+      // );
+      console.log("Claim data uploaded successfully:", response);
+
+      const sid = response?.session_id;
+      setSessionId(sid); // Optional, if you need to store it locally
+      navigate("/processing", { state: { sessionId: sid } });
+    } catch (error) {
+      console.error("Upload error:", error);
+      // alert("Something went wrong. Please try again.");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
@@ -32,15 +65,21 @@ export default function UploadPage() {
           </Button>
           <div className="flex items-center space-x-2">
             <Shield className="h-6 w-6 text-blue-600" />
-            <span className="text-xl font-bold text-slate-800">AutoClaim360</span>
+            <span className="text-xl font-bold text-slate-800">
+              AutoClaim360
+            </span>
           </div>
         </div>
       </header>
 
       <div className="container mx-auto px-4 py-8 max-w-2xl">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-slate-800">Submit Your Claim</h1>
-          <p className="text-lg text-slate-600">Provide your VIN and upload vehicle damage photos</p>
+          <h1 className="text-3xl font-bold text-slate-800">
+            Submit Your Claim
+          </h1>
+          <p className="text-lg text-slate-600">
+            Provide your VIN and upload vehicle damage photos
+          </p>
         </div>
 
         <Card className="shadow-lg border-0">
@@ -95,7 +134,9 @@ export default function UploadPage() {
                     Select Photos
                   </Button>
                   {files.length > 0 && (
-                    <p className="mt-4 text-sm text-slate-500">{files.length} photo(s) selected</p>
+                    <p className="mt-4 text-sm text-slate-500">
+                      {files.length} photo(s) selected
+                    </p>
                   )}
                 </div>
               </div>
@@ -112,5 +153,5 @@ export default function UploadPage() {
         </Card>
       </div>
     </div>
-  )
+  );
 }
