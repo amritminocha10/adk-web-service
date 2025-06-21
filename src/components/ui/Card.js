@@ -10,7 +10,7 @@ export function Card({ children, className = "" }) {
 }
 
 export function CardHeader({ children }) {
-  return <div className="p-4 border-b border-slate-200">{children}</div>
+  return <div className="p-4  border-slate-200">{children}</div>
 }
 
 export function CardTitle({ children }) {

@@ -16,8 +16,8 @@ import Footer from "../components/ui/Footer.js";
 
 export default function UploadPage() {
   const navigate = useNavigate();
-  const [vin, setVin] = useState("12457885214796354");
-  const [userQuery, setUserQuery] = useState("Damage");
+  const [vin, setVin] = useState("");
+  const [userQuery, setUserQuery] = useState("");
   const [files, setFiles] = useState([]);
   const [sessionId, setSessionId] = useState("");
 

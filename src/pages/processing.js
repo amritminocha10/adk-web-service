@@ -9,14 +9,12 @@ import {
   CheckCircle,
   Shield,
   ArrowLeft,
-  ChevronDown,
-  ChevronUp,
 } from "lucide-react";
 import { Button } from "../components/ui/Button";
 import { Card, CardContent } from "../components/ui/Card";
 import Footer from "../components/ui/Footer";
 import { Progress } from "../components/ui/Progress";
-import miracleLogo from '../assets/miracle-logo.png';
+import miracleLogo from "../assets/miracle-logo.png";
 
 const stepIcons = {
   vision: <Eye />,
@@ -178,7 +176,6 @@ export default function Processing() {
                 AutoClaim360
               </span>
             </div>
-
             <img
               src={miracleLogo}
               alt="Miracle Software Logo"
@@ -192,10 +189,13 @@ export default function Processing() {
         <h1 className="text-3xl font-bold text-slate-800 mb-2">
           Processing Your Claim
         </h1>
-        <p className="text-slate-600 mb-4">
+        <div className="text-slate-600 mb-4 text-xl">
           AI agents are reviewing your submission
-        </p>
-        <Progress value={overallProgress} className="h-3 mb-8 transition-all duration-500" />
+        </div>
+        <Progress
+          value={overallProgress}
+          className="h-3 mb-8 transition-all duration-500"
+        />
 
         <div className="space-y-4">
           {steps.map((step) => (
@@ -206,12 +206,13 @@ export default function Processing() {
                   className="w-full flex items-center space-x-4 text-left focus:outline-none"
                 >
                   <div
-                    className={`rounded-full p-2 ${step.status === "completed"
-                        ? "bg-green-500 text-white"
+                    className={`rounded-full p-2 ${
+                      step.status === "completed"
+                        ? "bg-[#0d416b] text-white"
                         : step.status === "processing"
-                          ? "bg-blue-500 text-white animate-pulse"
-                          : "bg-slate-200 text-slate-600"
-                      }`}
+                        ? "bg-[#00aae7] text-white animate-pulse"
+                        : "bg-slate-200 text-slate-600"
+                    }`}
                   >
                     {step.status === "completed" ? (
                       <CheckCircle className="w-6 h-6" />
@@ -222,18 +223,29 @@ export default function Processing() {
                     )}
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-lg font-medium text-slate-800">
-                      {step.title}
-                    </h3>
-                    <Progress value={step.progress} className="h-2 mt-1" />
+                    <div className="flex justify-between items-center">
+                      <h3 className="text-lg font-medium text-slate-800">
+                        {step.title}
+                      </h3>
+                      {step.message && (
+                        <button
+                          className="text-sm font-medium text-[#00aae7] "
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleAccordion(step.id);
+                          }}
+                        >
+                          {expandedStep === step.id
+                            ? "Close AI Output"
+                            : "View AI Output"}
+                        </button>
+                      )}
+                    </div>
+                    <Progress
+                      value={step.progress}
+                      className="h-2 mt-1 w-full"
+                    />
                   </div>
-                  {step.message && (
-                    expandedStep === step.id ? (
-                      <ChevronUp className="w-5 h-5 text-slate-500" />
-                    ) : (
-                      <ChevronDown className="w-5 h-5 text-slate-500" />
-                    )
-                  )}
                 </button>
 
                 {expandedStep === step.id && step.message && (
