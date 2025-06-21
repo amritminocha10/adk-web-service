@@ -69,6 +69,7 @@ import { Card, CardHeader, CardContent, CardTitle } from "../components/ui/Card"
 import { Badge } from "../components/ui/Badge"
 import { ArrowLeft, Shield, Download } from "lucide-react"
 import ReactMarkdown from "react-markdown"
+import Footer from "../components/ui/Footer"
 
 export default function Report() {
   const navigate = useNavigate()
@@ -89,11 +90,11 @@ export default function Report() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+    <div className="flex flex-col min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       <header className="border-b bg-white/80 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <Button variant="ghost" onClick={() => navigate("/processing")}>
+            <Button onClick={() => navigate("/processing")}>
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back
             </Button>
@@ -137,10 +138,12 @@ export default function Report() {
           </CardContent>
         </Card>
 
-        <Button onClick={() => navigate("/")} variant="outline" className="w-full">
+        <Button onClick={() => navigate("/")} className="w-full">
           Submit New Claim
         </Button>
       </div>
+
+      <Footer />
     </div>
   )
 }

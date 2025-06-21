@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom"
 import { Shield, Zap, FileCheck, Users } from "lucide-react"
 import { Button } from "../components/ui/Button"
 import { Card, CardContent } from "../components/ui/Card"
+import miracleLogo from '../assets/miracle-logo.png'
+import Footer from "../components/ui/Footer"
 
 export default function Home() {
   const navigate = useNavigate()
@@ -16,13 +18,19 @@ export default function Home() {
             <Shield className="h-8 w-8 text-blue-600" />
             <span className="text-2xl font-bold text-slate-800">AutoClaim360</span>
           </div>
+
+          <img
+            src={miracleLogo}
+            alt="Miracle Software Logo"
+            className="h-8 w-auto"
+          />
         </div>
       </header>
 
       {/* Hero */}
       <section className="container mx-auto px-4 py-16 md:py-24 text-center max-w-4xl">
         <h1 className="text-4xl md:text-6xl font-bold text-slate-800 mb-6 leading-tight">
-          AI-Powered Vehicle Damage Claims in <span className="text-blue-600">Minutes</span>
+          AI-Powered Vehicle Damage Claims in <span style={{'color': '#00AAE7'}}>Minutes</span>
         </h1>
         <p className="text-xl md:text-2xl text-slate-600 mb-8 leading-relaxed">
           Upload photos of your damaged vehicle and let our intelligent agents handle the rest.
@@ -56,8 +64,8 @@ export default function Home() {
               },
               {
                 icon: <Users className="h-12 w-12 text-blue-600 mx-auto mb-4" />,
-                title: "Expert Support",
-                desc: "Integrated chat support for help with your claim."
+                title: "Multi-Agent Intelligence",
+                desc: "Built using Google’s ADK, our AI agents work together to analyze damage, validate claims, and streamline approvals."
               }
             ].map(({ icon, title, desc }, idx) => (
               <Card key={idx} className="border-0 shadow-lg hover:shadow-xl transition-shadow">
@@ -72,16 +80,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-slate-800 text-white py-12">
-        <div className="container mx-auto px-4 flex justify-between items-center">
-          <div className="flex items-center space-x-2">
-            <Shield className="h-6 w-6" />
-            <span className="text-xl font-bold">AutoClaim360</span>
-          </div>
-          <div className="text-slate-400">© 2025 AutoClaim360. All rights reserved.</div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   )
 }

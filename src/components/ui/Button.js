@@ -20,6 +20,7 @@ export function Button({ children, onClick, className = "", type = "button", var
     <button
       type={type}
       onClick={onClick}
+      style={{'backgroundColor':'#1C537A'}}
       className={classNames(baseStyles, variants[variant], sizes[size], className)}
       disabled={disabled}
     >

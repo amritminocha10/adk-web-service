@@ -14,7 +14,9 @@ import {
 } from "lucide-react";
 import { Button } from "../components/ui/Button";
 import { Card, CardContent } from "../components/ui/Card";
+import Footer from "../components/ui/Footer";
 import { Progress } from "../components/ui/Progress";
+import miracleLogo from '../assets/miracle-logo.png';
 
 const stepIcons = {
   vision: <Eye />,
@@ -162,18 +164,26 @@ export default function Processing() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 to-blue-50">
       <header className="border-b bg-white/80 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-4 flex items-center space-x-4">
-          <Button variant="ghost" onClick={() => navigate("/upload")}>
+          <Button onClick={() => navigate("/upload")}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back
           </Button>
-          <div className="flex items-center space-x-2">
-            <Shield className="h-6 w-6 text-blue-600" />
-            <span className="text-xl font-bold text-slate-800">
-              AutoClaim360
-            </span>
+          <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <Shield className="h-6 w-6 text-blue-600" />
+              <span className="text-xl font-bold text-slate-800">
+                AutoClaim360
+              </span>
+            </div>
+
+            <img
+              src={miracleLogo}
+              alt="Miracle Software Logo"
+              className="h-8 w-auto"
+            />
           </div>
         </div>
       </header>
@@ -196,13 +206,12 @@ export default function Processing() {
                   className="w-full flex items-center space-x-4 text-left focus:outline-none"
                 >
                   <div
-                    className={`rounded-full p-2 ${
-                      step.status === "completed"
+                    className={`rounded-full p-2 ${step.status === "completed"
                         ? "bg-green-500 text-white"
                         : step.status === "processing"
-                        ? "bg-blue-500 text-white animate-pulse"
-                        : "bg-slate-200 text-slate-600"
-                    }`}
+                          ? "bg-blue-500 text-white animate-pulse"
+                          : "bg-slate-200 text-slate-600"
+                      }`}
                   >
                     {step.status === "completed" ? (
                       <CheckCircle className="w-6 h-6" />
@@ -237,6 +246,8 @@ export default function Processing() {
           ))}
         </div>
       </div>
+
+      <Footer />
     </div>
   );
 }

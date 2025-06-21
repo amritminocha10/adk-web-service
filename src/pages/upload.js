@@ -11,6 +11,8 @@ import {
 import { Input } from "../components/ui/Input";
 import { Label } from "../components/ui/Label";
 import API from "../server/API.js";
+import miracleLogo from '../assets/miracle-logo.png';
+import Footer from "../components/ui/Footer.js";
 
 export default function UploadPage() {
   const navigate = useNavigate();
@@ -59,15 +61,23 @@ export default function UploadPage() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       <header className="border-b bg-white/80 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-4 flex items-center space-x-4">
-          <Button variant="ghost" onClick={() => navigate("/")}>
+          <Button onClick={() => navigate("/")}>
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back
           </Button>
+          <div className="container flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <Shield className="h-6 w-6 text-blue-600" />
             <span className="text-xl font-bold text-slate-800">
               AutoClaim360
             </span>
+          </div>
+
+          <img
+            src={miracleLogo}
+            alt="Miracle Software Logo"
+            className="h-8 w-auto"
+          />
           </div>
         </div>
       </header>
@@ -127,7 +137,6 @@ export default function UploadPage() {
                   />
                   <Button
                     type="button"
-                    variant="outline"
                     onClick={() => document.getElementById("upload").click()}
                   >
                     <UploadIcon className="mr-2 h-4 w-4" />
@@ -152,6 +161,8 @@ export default function UploadPage() {
           </CardContent>
         </Card>
       </div>
+
+      <Footer />
     </div>
   );
 }
