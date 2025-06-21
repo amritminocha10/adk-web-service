@@ -15,7 +15,7 @@ export default function Chat() {
             Back
           </Button>
           <div className="flex items-center space-x-2">
-            <Shield className="h-6 w-6 text-blue-600" />
+            <Shield className="h-7 w-7 text-[#00aae7]" />
             <span className="text-xl font-bold text-slate-800">AutoClaim360</span>
           </div>
         </div>

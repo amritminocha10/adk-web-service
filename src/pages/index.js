@@ -15,7 +15,7 @@ export default function Home() {
       <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <Shield className="h-8 w-8 text-blue-600" />
+            <Shield className="h-8 w-8 text-[#00aae7]" />
             <span className="text-2xl font-bold text-slate-800">AutoClaim360</span>
           </div>
 
@@ -53,17 +53,17 @@ export default function Home() {
           <div className="grid md:grid-cols-3 gap-8">
             {[
               {
-                icon: <Zap className="h-12 w-12 text-blue-600 mx-auto mb-4" />,
+                icon: <Zap className="h-12 w-12 text-[#00aae7] mx-auto mb-4" />,
                 title: "Lightning Fast",
                 desc: "Process claims in minutes. Our AI agents work 24/7 to analyze damage."
               },
               {
-                icon: <FileCheck className="h-12 w-12 text-blue-600 mx-auto mb-4" />,
+                icon: <FileCheck className="h-12 w-12 text-[#00aae7] mx-auto mb-4" />,
                 title: "Accurate Analysis",
                 desc: "Advanced vision technology ensures precise assessments and fair claims."
               },
               {
-                icon: <Users className="h-12 w-12 text-blue-600 mx-auto mb-4" />,
+                icon: <Users className="h-12 w-12 text-[#00aae7] mx-auto mb-4" />,
                 title: "Multi-Agent Intelligence",
                 desc: "Built using Google’s ADK, our AI agents work together to analyze damage, validate claims, and streamline approvals."
               }

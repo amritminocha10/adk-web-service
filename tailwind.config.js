@@ -12,6 +12,12 @@ module.exports = {
       },
     },
     extend: {
+      // fontFamily: {
+      //   'sans':['"open-sans"']
+      // },
+      fontFamily: {
+        'sans':['"Montserrat"']
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",

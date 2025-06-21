@@ -67,7 +67,7 @@ export default function UploadPage() {
           </Button>
           <div className="container flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <Shield className="h-6 w-6 text-blue-600" />
+            <Shield className="h-7 w-7 text-[#00aae7]" />
             <span className="text-xl font-bold text-slate-800">
               AutoClaim360
             </span>
@@ -126,7 +126,7 @@ export default function UploadPage() {
               <div>
                 <Label>Upload Photos *</Label>
                 <div className="border-2 border-dashed rounded-lg p-6 text-center bg-white">
-                  <Camera className="mx-auto h-10 w-10 text-blue-500 mb-4" />
+                  <Camera className="mx-auto h-10 w-10 text-[#00aae7] mb-4" />
                   <input
                     id="upload"
                     type="file"
