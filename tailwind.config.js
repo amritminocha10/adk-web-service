@@ -16,7 +16,7 @@ module.exports = {
       //   'sans':['"open-sans"']
       // },
       fontFamily: {
-        'sans':['"Montserrat"']
+        sans: ['"Montserrat"'],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -24,6 +24,16 @@ module.exports = {
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
+        miracle: {
+          lightBlue: "#00aae7",
+          mediumBlue: "#2368a0",
+          darkBlue: "#0d416b",
+          red: "#ef4048",
+          black: "#232527",
+          white: "#ffffff",
+          darkGrey: "#8c8c8c",
+          lightGrey: "#b7b2b3",
+        },
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
@@ -72,9 +82,8 @@ module.exports = {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
       },
+      safelist: ["bg-[#00aae7]", "bg-red-600"],
     },
   },
-   plugins: [
-    require('@tailwindcss/typography'),
-  ],
+  plugins: [require("@tailwindcss/typography")],
 };

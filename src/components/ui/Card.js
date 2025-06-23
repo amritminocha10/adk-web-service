@@ -3,7 +3,7 @@ import classNames from "classnames"
 
 export function Card({ children, className = "" }) {
   return (
-    <div className={classNames("bg-white rounded-xl border border-slate-200", className)}>
+    <div className={classNames("bg-white rounded-sm border border-slate-200", className)}>
       {children}
     </div>
   )

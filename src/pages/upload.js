@@ -11,8 +11,10 @@ import {
 import { Input } from "../components/ui/Input";
 import { Label } from "../components/ui/Label";
 import API from "../server/API.js";
-import miracleLogo from '../assets/miracle-logo.png';
 import Footer from "../components/ui/Footer.js";
+import Spinner from "../components/ui/Spinner.js";
+import MiracleLogo from "../assets/miracle-logo.png";
+import { ToastContainer, toast } from "react-toastify";
 
 export default function UploadPage() {
   const navigate = useNavigate();
@@ -20,6 +22,7 @@ export default function UploadPage() {
   const [userQuery, setUserQuery] = useState("");
   const [files, setFiles] = useState([]);
   const [sessionId, setSessionId] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleFileChange = (e) => {
     const newFiles = Array.from(e.target.files || []);
@@ -28,37 +31,43 @@ export default function UploadPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
     const formData = new FormData();
     formData.append("vin", vin);
+    if(vin.length !== 17) {
+      setLoading(false);
+      toast.error("Please enter a valid 17-digit VIN.");
+      return;
+    }
+    localStorage.setItem("vin", vin); // Store VIN in localStorage
     formData.append("customer_prompt", userQuery);
-
     files.forEach((file) => {
       formData.append("vehicle_image", file);
     });
 
     try {
       const response = await API.post.uploadClaimData(formData);
+      console.log(response);
       if (!response || !response.session_id) {
-        alert("Failed to upload claim data. Please try again.");
+        toast.error("Failed to upload claim data. Please try again.");
         return;
       }
       setSessionId(response?.session_id);
-      // alert(
-      //   "Claim data uploaded successfully. You will be redirected to processing page."
-      // );
       console.log("Claim data uploaded successfully:", response);
-
       const sid = response?.session_id;
       setSessionId(sid); // Optional, if you need to store it locally
+      setLoading(false);
+      toast.success("Claim data uploaded successfully!");
       navigate("/processing", { state: { sessionId: sid } });
     } catch (error) {
       console.error("Upload error:", error);
-      // alert("Something went wrong. Please try again.");
+      setLoading(false);
+      toast.error("Failed to upload claim data. Please try again.");
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex flex-col">
       <header className="border-b bg-white/80 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-4 flex items-center space-x-4">
           <Button onClick={() => navigate("/")}>
@@ -66,23 +75,22 @@ export default function UploadPage() {
             Back
           </Button>
           <div className="container flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <Shield className="h-7 w-7 text-[#00aae7]" />
-            <span className="text-xl font-bold text-slate-800">
-              AutoClaim360
-            </span>
-          </div>
-
-          <img
-            src={miracleLogo}
-            alt="Miracle Software Logo"
-            className="h-8 w-auto"
-          />
+            <div className="flex items-center space-x-2">
+              <Shield className="h-6 text-[#00aae7]" />
+              <span className="text-xl font-bold text-slate-800">
+                Auto Claim 360
+              </span>
+            </div>
+            <img
+              className="w-36 object-cover"
+              src={MiracleLogo}
+              alt="Chat Header"
+            />
           </div>
         </div>
       </header>
 
-      <div className="container mx-auto px-4 py-8 max-w-2xl">
+      <div className="container mx-auto px-4 py-8 max-w-2xl m-auto">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-slate-800">
             Submit Your Claim
@@ -108,6 +116,7 @@ export default function UploadPage() {
                   maxLength={17}
                   required
                   placeholder="Enter 17-digit VIN"
+                  className="mt-2"
                 />
               </div>
 
@@ -120,6 +129,7 @@ export default function UploadPage() {
                   onChange={(e) => setUserQuery(e.target.value)}
                   required
                   placeholder="Please explain the damage"
+                  className="mt-2"
                 />
               </div>
 
@@ -155,7 +165,13 @@ export default function UploadPage() {
                 className="w-full bg-blue-600 text-white py-3 rounded-md"
                 disabled={!vin || files.length === 0}
               >
-                Submit for Analysis
+                {loading && (
+                  <div className="flex items-center gap-4">
+                    <Spinner size="small" />
+                  </div>
+                )}
+
+                <span className="ml-2">Submit for Analysis</span>
               </Button>
             </form>
           </CardContent>
@@ -163,6 +179,14 @@ export default function UploadPage() {
       </div>
 
       <Footer />
+      <ToastContainer
+        position="bottom-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        closeOnClick
+        pauseOnHover
+        draggable
+      />
     </div>
   );
 }

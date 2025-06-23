@@ -3,7 +3,6 @@ import classNames from "classnames"
 
 export function Badge({ children, className = "", variant = "default" }) {
   const variants = {
-    default: "bg-slate-100 text-slate-800 border border-slate-200",
     outline: "border border-current text-slate-600",
     secondary: "bg-blue-100 text-blue-800",
   }

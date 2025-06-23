@@ -1,73 +1,5 @@
-// import { useLocation, useNavigate } from "react-router-dom"
-// import { Button } from "../components/ui/Button"
-// import { Card, CardHeader, CardContent, CardTitle } from "../components/ui/Card"
-// import { Badge } from "../components/ui/Badge"
-// import { ArrowLeft, Shield, Download } from "lucide-react"
-// import ReactMarkdown from "react-markdown"
-// import Footer from "../components/ui/Footer"
-
-// export default function Report() {
-//   const navigate = useNavigate()
-//   const location = useLocation()
-//   const steps = location.state?.steps || []
-//   const repostedData = location.state?.repostedData || {}
-
-//   const handleDownload = () => alert("Downloading PDF report...")
-
-//   let finalReportMarkdown = ""
-//   try {
-//     const parsed = typeof repostedData.message === "string"
-//       ? JSON.parse(repostedData.message)
-//       : repostedData.message
-//     finalReportMarkdown = parsed?.final_report || ""
-//   } catch (err) {
-//     finalReportMarkdown = "⚠️ Error parsing report data."
-//   }
-
-//   return (
-//     <div className="flex flex-col min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-//       <header className="border-b bg-white/80 backdrop-blur-sm">
-//         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-//           <div className="flex items-center space-x-4">
-//             <Button onClick={() => navigate("/processing")}>
-//               <ArrowLeft className="h-4 w-4 mr-2" />
-//               Back
-//             </Button>
-//             <div className="flex items-center space-x-2">
-//               <Shield className="h-7 w-7 text-[#00aae7]" />
-//               <span className="text-xl font-bold text-slate-800">AutoClaim360</span>
-//             </div>
-//           </div>
-//           <Button onClick={handleDownload} className="bg-blue-600 text-white">
-//             <Download className="h-4 w-4 mr-2" />
-//             Download PDF
-//           </Button>
-//         </div>
-//       </header>
-
-//       <div className="container mx-auto px-4 py-8 max-w-4xl max-h-96">
-//         <h1 className="text-3xl font-bold text-slate-800 mb-4 text-center">Claim Analysis Report</h1>
-
-//         {/* Agent Summary Card (Markdown) */}
-//         <Card className="mb-6 shadow-md h-[450px] overflow-auto">
-//           <CardHeader className="fixed border-4 border-balck">
-//             <CardTitle>Agent Summary</CardTitle>
-//           </CardHeader>
-//           <CardContent className="prose prose-slate max-w-none">
-//             <ReactMarkdown>{finalReportMarkdown}</ReactMarkdown>
-//           </CardContent>
-//         </Card>
-
-//         <Button onClick={() => navigate("/")} className="w-full">
-//           Submit New Claim
-//         </Button>
-//       </div>
-
-//       <Footer />
-//     </div>
-//   )
-// }
 import { useLocation, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { Button } from "../components/ui/Button";
 import {
   Card,
@@ -79,43 +11,51 @@ import { Badge } from "../components/ui/Badge";
 import { ArrowLeft, Shield, Download, CheckCircle } from "lucide-react";
 import Footer from "../components/ui/Footer";
 import ReactMarkdown from "react-markdown";
+import LineImg from "../assets/Line.svg";
+import MiracleLogo from "../assets/miracle-logo.png";
 
 export default function Report() {
   const navigate = useNavigate();
   const location = useLocation();
   const repostedData = location.state?.repostedData || {};
+  const totalProcessingTime = location.state?.totalProcessingTime || 1.2;
 
-  const handleDownload = () => alert("Downloading PDF report...");
+  const [status, setStatus] = useState("Rejected");
+  const [reportMarkdown, setReportMarkdown] = useState("");
+  const [claimId, setClaimId] = useState(
+    localStorage.getItem("vin") || "Unknown"
+  );
 
-  let reportMarkdown = "";
-  let claimId = "Unknown";
-  let status = "Pending";
+  useEffect(() => {
+    try {
+      const parsed =
+        typeof repostedData.message === "string"
+          ? JSON.parse(repostedData.message)
+          : repostedData.message;
+      console.log("Parsed data:", parsed);
+      const finalReport = parsed?.final_report || "";
+      setReportMarkdown(finalReport);
 
-  try {
-    const parsed =
-      typeof repostedData.message === "string"
-        ? JSON.parse(repostedData.message)
-        : repostedData.message;
+      const idMatch = finalReport.match(/\b\d{17}\b/);
+      setClaimId(
+        idMatch ? idMatch[0] : localStorage.getItem("vin") || "Unknown"
+      );
 
-    reportMarkdown = parsed?.final_report || "";
+      const parsedStatus = parsed?.status?.toLowerCase();
+      console.log("Parsed status:", parsedStatus);
 
-    // Use 17-digit Claim ID pattern
-    const idMatch = reportMarkdown.match(/\b\d{17}\b/);
-    claimId = idMatch ? idMatch[0] : "Unknown";
-
-    const recommendationMatch = reportMarkdown.match(
-      /\*\*Recommendation:\*\* \*\*(.+?)\*\*/
-    );
-    if (recommendationMatch) {
-      status = recommendationMatch[1].includes("REJECT")
-        ? "Rejected"
-        : "Approved";
+      if (parsedStatus === "rejected" || parsedStatus === "reject") {
+        setStatus("Rejected");
+      } else if (parsedStatus === "approved") {
+        setStatus("Approved");
+      } else if (parsedStatus === "partialaccept") {
+        setStatus("Partially Accepted");
+      }
+    } catch (err) {
+      setReportMarkdown("**⚠️ Error parsing report data.**");
+      setStatus("");
     }
-  } catch (err) {
-    reportMarkdown = "**⚠️ Error parsing report data.**";
-  }
-
-  const statusColor = status === "Rejected" ? "bg-red-500" : "bg-[#00aae7]";
+  }, [repostedData]);
 
   const steps = [
     "Analyzing Damage",
@@ -129,22 +69,19 @@ export default function Report() {
       {/* Header */}
       <header className="border-b bg-white/80 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <Button onClick={() => navigate("/processing")}>
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back
-            </Button>
+          <div className="container flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <Shield className="h-7 w-7 text-[#00aae7]" />
+              <Shield className="h-6 text-[#00aae7]" />
               <span className="text-xl font-bold text-slate-800">
-                AutoClaim360
+                Auto Claim 360
               </span>
             </div>
+            <img
+              className="w-36 object-cover"
+              src={MiracleLogo}
+              alt="Chat Header"
+            />
           </div>
-          <Button onClick={handleDownload} className="bg-blue-600 text-white">
-            <Download className="h-4 w-4 mr-2" />
-            Download PDF
-          </Button>
         </div>
       </header>
 
@@ -158,33 +95,47 @@ export default function Report() {
         </p>
 
         {/* Progress Cards */}
-        <div className="mb-6">
-          <div className="w-full bg-gray-200 rounded-full h-2.5 mb-2">
-            <div className="bg-[#00aae7] h-2.5 rounded-full w-full transition-all duration-500"></div>
+        <div className="">
+          <div className="w-full max-w-[600px] mx-auto mb-3">
+            {/* Labels Row */}
+            <div className="flex justify-between text-sm text-gray-800 mb-1">
+              <span>Overall Progress</span>
+              <span>Time taken: {totalProcessingTime} seconds</span>
+            </div>
+
+            {/* Progress Bar */}
+            <div className="w-full bg-gray-200 rounded-full h-2.5 flex items-center">
+              <div
+                className="bg-[#00aae7] h-2.5 rounded-full transition-all duration-500"
+                style={{ width: "100%" }}
+              ></div>
+            </div>
           </div>
-          <div className="grid grid-cols-4 text-center text-sm text-gray-700">
+
+          <div className="bg-[#00AAE71A] rounded-tl-[5px] rounded-tr-[5px] overflow-hidden flex shadow-sm">
             {steps.map((step, idx) => (
-              <Card
-                key={idx}
-                className={`w-full rounded-none border-0 bg-[#00AAE71A] ${
-                  idx !== steps.length - 1 ? "border-r border-gray-300" : ""
-                }`}
-              >
-                <CardContent className="flex flex-col items-center justify-center p-4 space-y-2">
-                  <span className="font-semibold text-slate-800 text-lg text-center">
+              <div className="flex items-center flex-1" key={idx}>
+                <div
+                  className="flex-1 relative flex flex-col items-center justify-center p-4 space-y-2"
+                  key={idx}
+                >
+                  <span className="font-semibold text-slate-800 text-sm text-center">
                     {step}
                   </span>
                   <div className="bg-[#0d416b] text-white rounded-full w-6 h-6 flex items-center justify-center">
                     <CheckCircle className="w-4 h-4" />
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+                {idx !== steps.length - 1 && (
+                  <img src={LineImg} alt="Arrow Right" />
+                )}
+              </div>
             ))}
           </div>
         </div>
 
         {/* Claim Summary */}
-        <Card className="mb-4 shadow-md h-[370px] overflow-auto">
+        <Card className="mb-4 shadow-md h-[480px] overflow-auto border-none">
           <CardHeader>
             <CardTitle>Claim Overview</CardTitle>
           </CardHeader>
@@ -192,10 +143,20 @@ export default function Report() {
             <p>
               <strong>Claim ID:</strong> {claimId}
             </p>
-            <Badge className={`${statusColor} text-white flex`}>{status}</Badge>
+            {status && (
+              <Badge
+                className={`flex ${
+                  status === "Rejected"
+                    ? "bg-miracle-red/90"
+                    : "bg-miracle-lightBlue"
+                } text-white font-semibold p-1`}
+              >
+                {status}
+              </Badge>
+            )}
           </div>
           <CardContent className="space-y-4">
-            <hr className="border-0.5 border-[#00aae7] my-2" />
+            <hr className="border-2 border-[#00aae7] my-2" />
             <div className="prose max-w-none prose-sm">
               <ReactMarkdown>{reportMarkdown}</ReactMarkdown>
             </div>
