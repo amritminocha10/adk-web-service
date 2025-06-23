@@ -1,8 +1,7 @@
 import axios from "axios";
 
-// const SERVER_URL =  window.location.origin;
-// const SERVER_URL =  "https://autoclaim-711485936165.us-central1.run.app";
-const SERVER_URL = 'http://127.0.0.1:8000';
+const SERVER_URL =  window.location.origin;
+// const SERVER_URL = 'http://127.0.0.1:8000';
 
 const api = axios.create({
   baseURL: SERVER_URL,

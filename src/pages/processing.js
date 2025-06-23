@@ -95,9 +95,8 @@ export default function Processing() {
     totalProcessingTimeRef.current = null; // Reset total time
 
     const controller = new AbortController();
-    const serverUrl = "http://127.0.0.1:8000"; // Use the current origin for the server URL
-    // const serverUrl = window.location.origin; // Use the current origin for the server URL
-    // const serverUrl = "https://autoclaim-711485936165.us-central1.run.app"; // Use the current origin for the server URL
+    // const serverUrl = "http://127.0.0.1:8000"; // Use the current origin for the server URL
+    const serverUrl = window.location.origin; // Use the current origin for the server URL
 
     fetch(`${serverUrl}/stream-claim/${sessionId}`, {
       method: "GET",
